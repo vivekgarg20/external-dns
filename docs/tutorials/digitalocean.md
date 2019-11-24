@@ -66,7 +66,7 @@ metadata:
   name: external-dns
 rules:
 - apiGroups: [""]
-  resources: ["services"]
+  resources: ["services","endpoints"]
   verbs: ["get","watch","list"]
 - apiGroups: [""]
   resources: ["pods"]
