@@ -282,16 +282,23 @@ func (sc *serviceSource) extractHeadlessEndpoints(svc *v1.Service, hostname stri
 				headlessDomains = append(headlessDomains, fmt.Sprintf("%s.%s", pod.Spec.Hostname, hostname))
 			}
 
+			targets := getTargetsFromTargetAnnotation(pod.Annotations)
+
 			for _, headlessDomain := range headlessDomains {
 				var ep string
-				if sc.publishHostIP == true {
-					ep = pod.Status.HostIP
-					log.Debugf("Generating matching endpoint %s with HostIP %s", headlessDomain, ep)
+				if len(targets) > 0 {
+					log.Debugf("Generating matching endpoint %s with pod target annotation %s", headlessDomain, targets)
 				} else {
-					ep = address.IP
-					log.Debugf("Generating matching endpoint %s with EndpointAddress IP %s", headlessDomain, ep)
+					if sc.publishHostIP == true {
+						ep = pod.Status.HostIP
+						log.Debugf("Generating matching endpoint %s with HostIP %s", headlessDomain, ep)
+					} else {
+						ep = address.IP
+						log.Debugf("Generating matching endpoint %s with EndpointAddress IP %s", headlessDomain, ep)
+					}
+					targets = endpoint.Targets{ep}
 				}
-				targetsByHeadlessDomain[headlessDomain] = append(targetsByHeadlessDomain[headlessDomain], ep)
+				targetsByHeadlessDomain[headlessDomain] = append(targetsByHeadlessDomain[headlessDomain], targets...)
 			}
 		}
 	}
